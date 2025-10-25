@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 
 export default defineContentScript({
-  matches: ["*://*/*"],
+  matches: ["https://solscan.io/*"],
   cssInjectionMode: "ui",
 
   async main(ctx) {
