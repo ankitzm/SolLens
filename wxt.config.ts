@@ -10,11 +10,11 @@ export default defineConfig({
     description: "Locally name Solana wallet addresses on Solscan",
     version: "0.0.1",
     permissions: ["contextMenus", "storage", "activeTab"],
-    host_permissions: ["https://solscan.io/*"],
+    host_permissions: ["*"],
   },
   webExt: {
-    startUrls: ["https://solscan.io"],
-    disabled: false,
+    startUrls: [""],
+    disabled: true,
     binaries: { chrome: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" },
   },
 });
