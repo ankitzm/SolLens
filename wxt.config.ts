@@ -1,4 +1,5 @@
 import { defineConfig } from "wxt";
+import tailwindcss from "@tailwindcss/vite";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -10,11 +11,14 @@ export default defineConfig({
     description: "Locally name Solana wallet addresses on Solscan",
     version: "0.0.1",
     permissions: ["contextMenus", "storage", "activeTab"],
-    host_permissions: ["*"],
+    host_permissions: ["https://solscan.io/*"],
   },
   webExt: {
     startUrls: [""],
     disabled: true,
     binaries: { chrome: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" },
   },
+  vite: () => ({
+    plugins: [tailwindcss()],
+  }),
 });

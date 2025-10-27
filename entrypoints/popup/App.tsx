@@ -2,20 +2,12 @@ import React from 'react';
 
 function App() {
   return (
-    <div className="p-4 w-[250px]">
-      <h1 className="text-lg font-bold">Hello World</h1>
-      <p>
-        This page is styled with{' '}
-        <a
-          className="underline text-blue-500"
-          href="https://tailwindcss.com/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          TailwindCSS is the boss jhjh
-        </a>
-        .
+    <div className="p-4 w-[400px] h-96">
+      <h1 className="text-xl font-bold mb-2">WNA - Wallet Namer</h1>
+      <p className="text-sm text-gray-600">
+        Locally name Solana wallet addresses on Solscan
       </p>
+      {/* Phase 5: Management UI will go here */}
     </div>
   );
 }
