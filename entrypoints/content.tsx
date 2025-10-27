@@ -2,6 +2,8 @@ import "~/assets/tailwind.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { NamingModal } from "~/components/NamingModal";
+import { MappingStorage } from "~/lib/storage";
+import { scanForAddressLinks, annotateAddressLinks } from "~/lib/annotator";
 
 export default defineContentScript({
   matches: ["https://solscan.io/*"],
@@ -12,7 +14,10 @@ export default defineContentScript({
     // Listen for messages from background script
     browser.runtime.onMessage.addListener(handleMessage);
     
-    // Phase 3: Address detection and replacement will go here
+    // Phase 3: Scan and annotate addresses on page load
+    await scanAndAnnotate();
+    
+    console.log("[WNA] Initial annotation complete");
   },
 });
 
@@ -127,12 +132,51 @@ async function saveMapping(
     
     if (response.success) {
       console.log("[WNA] Mapping saved successfully");
-      // Phase 3: Trigger re-scan to update visible addresses
+      // Re-scan to update visible addresses with new name
+      await scanAndAnnotate();
     } else {
       throw new Error(response.error || "Failed to save mapping");
     }
   } catch (error) {
     console.error("[WNA] Failed to save mapping:", error);
     throw error;
+  }
+}
+
+/**
+ * Scan the page and annotate addresses with saved names
+ */
+async function scanAndAnnotate(): Promise<void> {
+  try {
+    // Get all saved mappings from background
+    const response = await browser.runtime.sendMessage({
+      type: "GET_ALL_MAPPINGS",
+    });
+    
+    if (!response || !response.success) {
+      console.warn("[WNA] Failed to get mappings for annotation");
+      return;
+    }
+    
+    const mappingsData = response.data || {};
+    const mappings = new Map<string, any>(Object.entries(mappingsData));
+    
+    console.log(`[WNA] Scanning page with ${mappings.size} saved mappings`);
+    
+    // Scan for address links
+    const links = scanForAddressLinks(document.body);
+    
+    console.log(`[WNA] Found ${links.length} address links on page`);
+    
+    // Annotate links with saved names
+    annotateAddressLinks(links, mappings as any);
+    
+    const annotatedCount = links.filter(link => 
+      mappings.has(link.address)
+    ).length;
+    
+    console.log(`[WNA] Annotated ${annotatedCount} addresses`);
+  } catch (error) {
+    console.error("[WNA] Failed to scan and annotate:", error);
   }
 }

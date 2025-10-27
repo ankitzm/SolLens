@@ -192,12 +192,117 @@ entrypoints/content.tsx        (138 lines) - Content script (renamed from .ts)
 
 ---
 
-## Phase 3 — Content Script (Anchor-first Inline Replacement) (NEXT)
+## Phase 3 — Content Script (Anchor-first Inline Replacement) ✅ COMPLETE
 
-Phase 3 will implement:
-- Detect anchors with `/address/<pubkey>` pattern
-- Replace visible text inline with `<name> (HcUZx...R6ihX)` format
-- Preserve link targets and behaviors
-- Dedupe via data attributes
-- Minimal CSS for styling
+### Completed Tasks
+- ✅ Created modular annotator system (`/lib/annotator/`):
+  - `scanner.ts` - Scans DOM for address links
+  - `annotator.ts` - Replaces text with names
+  - `index.ts` - Public API exports
+- ✅ Address link scanner:
+  - `scanForAddressLinks()` - Finds all address links on page
+  - `extractAddressFromHref()` - Extracts address from URL patterns
+  - Supports `/account/`, `/address/`, `/token/` patterns
+  - Skips already-processed elements via `data-wna-processed` attribute
+- ✅ Address annotator:
+  - `annotateAddressLinks()` - Replaces link text with saved names
+  - Format: `<Name> (HcUZx...R6ihX)` - name + truncated address
+  - Preserves link functionality (href unchanged)
+  - Adds custom color support via CSS variables
+  - Adds hover tooltips with full address, name, and tags
+- ✅ Deduplication system:
+  - `data-wna-processed` attribute prevents re-processing
+  - `data-wna-address` stores full address for reference
+  - `data-wna-name` stores saved name
+- ✅ Minimal CSS styling (`assets/tailwind.css`):
+  - `.wna-address` class for annotated links
+  - Custom color via `--wna-color` CSS variable
+  - Bold text with underline border
+  - Smooth hover effects
+  - Uses `!important` to override Solscan styles
+- ✅ Content script integration:
+  - Scans and annotates on initial page load
+  - Re-scans after saving new name (immediate update)
+  - Fetches all mappings from background script
+  - Console logging for debugging
+- ✅ Background script handler:
+  - `GET_ALL_MAPPINGS` message handler
+  - Returns all saved mappings for annotation
+
+### Acceptance Criteria Met
+- Known addresses render with names on initial load ✓
+- Links remain intact and clickable ✓
+- No layout breakage on Solscan pages ✓
+- Dedupe prevents duplicate processing ✓
+- After saving a name, page updates immediately ✓
+- TypeScript compilation passes (`pnpm compile`) ✓
+- Production build succeeds (`pnpm build`) ✓
+
+### Exit Checklist
+- [x] Anchor scanner implemented with pattern matching
+- [x] Annotator replaces text with name + truncated address
+- [x] Links preserve href and remain functional
+- [x] Data attributes prevent duplicate processing
+- [x] Minimal CSS added for styling
+- [x] Scans on page load and after save
+- [x] TypeScript compilation passes
+- [x] Production build successful (410 KB total)
+
+### Technical Implementation
+
+**Address Link Scanner:**
+```typescript
+// Finds all <a> tags with address URLs
+const links = scanForAddressLinks(document.body);
+// Returns: [{ element, address, originalText }, ...]
+```
+
+**Annotation Format:**
+```typescript
+// Before: "3rnVJzSEcV1wnStkX15qS5pX43U4ENHv2me6LwEjp9bc"
+// After:  "My Wallet (3rnVJ...Ejp9bc)"
+```
+
+**CSS Styling:**
+```css
+.wna-address {
+  font-weight: 600;
+  color: var(--wna-color, #6366f1);
+  border-bottom: 2px solid currentColor;
+}
+```
+
+**Data Flow:**
+```
+Page Load → scanAndAnnotate()
+          ↓
+Background: GET_ALL_MAPPINGS
+          ↓
+scanForAddressLinks() → Find all <a> tags
+          ↓
+annotateAddressLinks() → Replace text + add styles
+          ↓
+User sees: "Name (addr...)" with colors
+```
+
+### Files Created/Modified
+```
+/lib/annotator/scanner.ts      (88 lines)  - DOM scanner
+/lib/annotator/annotator.ts    (73 lines)  - Text replacement
+/lib/annotator/index.ts        (8 lines)   - Public API
+assets/tailwind.css            (21 lines)  - CSS styles
+entrypoints/content.tsx        (183 lines) - Integration
+entrypoints/background.ts      (169 lines) - GET_ALL_MAPPINGS handler
+```
+
+---
+
+## Phase 4 — SPA Support & Fallback Detection (NEXT)
+
+Phase 4 will implement:
+- MutationObserver to detect dynamic content changes
+- Debounced scanning for performance
+- requestIdleCallback for chunked processing
+- Conservative text-node fallback scanner
+- Context blocklist for noisy regions
 

@@ -144,6 +144,25 @@ function handleMessage(
     return true; // Keep channel open for async response
   }
   
+  if (message.type === "GET_ALL_MAPPINGS") {
+    // Handle async operation
+    (async () => {
+      try {
+        const mappings = await MappingStorage.getAll();
+        
+        // Convert Map to plain object for message passing
+        const mappingsObject = Object.fromEntries(mappings);
+        
+        sendResponse({ success: true, data: mappingsObject });
+      } catch (error) {
+        console.error("[WNA] Failed to get all mappings:", error);
+        sendResponse({ success: false, error: String(error) });
+      }
+    })();
+    
+    return true; // Keep channel open for async response
+  }
+  
   return false;
 }
 
