@@ -118,11 +118,86 @@
 
 ---
 
-## Phase 2 — Context Menu & Naming Flow (NEXT)
+## Phase 2 — Context Menu & Naming Flow ✅ COMPLETE
 
-Phase 2 will implement:
-- Context menu registration on Solscan pages
-- Menu enabled/disabled based on selection validity
-- Naming UI modal/popup with address pre-filled
-- Integration with storage module for save operations
+### Completed Tasks
+- ✅ Created address validation utilities (`/lib/utils/address.ts`):
+  - `isValidSolanaAddress()` - Validates base58 format (32-44 chars)
+  - `extractAddresses()` - Extracts addresses from text
+  - `truncateAddress()` - Display format (e.g., HcUZx...R6ihX)
+  - `containsSolanaAddress()` - Check if text has valid address
+- ✅ Background script context menu (`entrypoints/background.ts`):
+  - Context menu registered on install/startup
+  - Menu item: "Name this address"
+  - Active on Solscan pages only
+  - Contexts: selection and link
+  - Extracts address from selected text or link URL
+  - Validates address before opening UI
+  - Handles SAVE_MAPPING and GET_MAPPING messages
+- ✅ Naming modal UI (`components/NamingModal.tsx`):
+  - Beautiful React modal with gradient header
+  - Form fields: name (required), tags, color picker
+  - Address display with truncate/expand toggle
+  - Copy-to-clipboard button
+  - Pre-fills existing data for edits
+  - Real-time validation
+  - Save/Cancel actions
+  - Loading states
+- ✅ Content script integration (`entrypoints/content.tsx`):
+  - Renamed from .ts to .tsx for JSX support
+  - Message listener for OPEN_NAMING_UI
+  - Fetches existing mapping on open
+  - Renders NamingModal with React
+  - Saves via background script messages
+- ✅ Message passing utilities (`/lib/utils/messaging.ts`):
+  - Type-safe message definitions
+  - sendMessage / sendMessageToTab helpers
+  - onMessage listener wrapper
+
+### Acceptance Criteria Met
+- Right-click on address opens UI with address filled ✓
+- Context menu only visible on Solscan ✓
+- Address validation works (base58, 32-44 chars) ✓
+- Save persists data via storage module ✓
+- Re-opening shows existing values ✓
+- Edits save correctly (last-write-wins) ✓
+- TypeScript compilation passes (`pnpm compile`) ✓
+- Production build succeeds (`pnpm build`) ✓
+
+### Exit Checklist
+- [x] Context menu registered on Solscan pages
+- [x] Menu extracts address from selection or link
+- [x] Address validation (base58) working
+- [x] Naming UI modal created with React + Tailwind
+- [x] Form pre-fills existing data for edits
+- [x] Save operation persists to storage
+- [x] TypeScript compilation passes
+- [x] Production build successful (407 KB total)
+
+### Technical Implementation
+- **Address Validation**: Conservative base58 check (32-44 chars)
+- **Context Menu**: Selection + link contexts on `https://solscan.io/*`
+- **UI Rendering**: React portal into page DOM
+- **Message Flow**: Background ↔ Content Script via browser.runtime
+- **Storage Integration**: Background script mediates all storage access
+
+### Files Created/Modified
+```
+/lib/utils/address.ts          (122 lines) - Address validation
+/lib/utils/messaging.ts        (45 lines)  - Message passing
+/components/NamingModal.tsx    (236 lines) - React modal UI
+entrypoints/background.ts      (137 lines) - Context menu + handlers
+entrypoints/content.tsx        (138 lines) - Content script (renamed from .ts)
+```
+
+---
+
+## Phase 3 — Content Script (Anchor-first Inline Replacement) (NEXT)
+
+Phase 3 will implement:
+- Detect anchors with `/address/<pubkey>` pattern
+- Replace visible text inline with `<name> (HcUZx...R6ihX)` format
+- Preserve link targets and behaviors
+- Dedupe via data attributes
+- Minimal CSS for styling
 
