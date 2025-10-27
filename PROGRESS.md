@@ -33,12 +33,96 @@
 
 ---
 
-## Phase 1 — Storage Module & Schema (NEXT)
+## Phase 1 — Storage Module & Schema ✅ COMPLETE
 
-Phase 1 will implement:
-- Local storage wrapper with CRUD operations
-- Schema validation using Zod (lenient mode with warnings)
-- In-memory cache for reads
-- Import/export JSON functionality
-- Timestamp management (created_at, updated_at)
+### Completed Tasks
+- ✅ Created modular storage system in `/lib/storage/`:
+  - `schema.ts` - Zod schemas and TypeScript types
+  - `storage.ts` - CRUD operations with in-memory cache
+  - `import-export.ts` - JSON import/export with validation
+  - `index.ts` - Public API exports
+  - `README.md` - Module documentation
+- ✅ Implemented CRUD operations:
+  - `MappingStorage.get()` - Get single mapping
+  - `MappingStorage.getAll()` - Get all mappings (cached)
+  - `MappingStorage.save()` - Create/update with automatic timestamps
+  - `MappingStorage.delete()` - Delete mapping
+  - `MappingStorage.search()` - Search by name, tags, or address
+  - `MappingStorage.filter()` - Filter by tags or color
+- ✅ Settings management:
+  - `SettingsStorage.get()` - Get settings (cached)
+  - `SettingsStorage.update()` - Partial update
+  - `SettingsStorage.reset()` - Reset to defaults
+- ✅ Import/export functionality:
+  - `exportData()` / `exportDataAsJSON()` - Export to JSON
+  - `importData()` / `importDataFromJSON()` - Import with validation
+  - `validateImportData()` - Lenient validation with warnings
+  - Supports overwrite and merge modes
+- ✅ Schema validation with Zod:
+  - Required fields validated (name)
+  - Optional fields with defaults (tags, color)
+  - Unknown fields trigger warnings but don't block
+  - Detailed error messages for invalid data
+- ✅ In-memory caching:
+  - Cache populated on first read
+  - Cache invalidated on writes
+  - Manual invalidation available
+- ✅ Automatic timestamp management:
+  - `created_at` set on creation
+  - `updated_at` set on every save
+  - Timestamps preserved on updates
+- ✅ Helper utilities:
+  - `getAllTags()` - Get unique tags for filters
+  - `getAllColors()` - Get unique colors for filters
+
+### Acceptance Criteria Met
+- CRUD operations work correctly ✓
+- Data persists across reloads (using WXT storage) ✓
+- Timestamps automatically managed ✓
+- Import/export preserves data integrity ✓
+- Validation is lenient with warnings ✓
+- TypeScript compilation passes (`pnpm compile`) ✓
+- Production build succeeds (`pnpm build`) ✓
+
+### Exit Checklist
+- [x] Storage module created with modular structure
+- [x] CRUD operations implemented and typed
+- [x] Search and filter functionality working
+- [x] Import/export with lenient validation
+- [x] In-memory cache implemented
+- [x] TypeScript compilation passes with no errors
+- [x] Production build successful
+- [x] Module documentation complete
+
+### Storage Keys Used
+- `local:wna:mappings` - Address mappings (Record<address, AddressMapping>)
+- `local:wna:settings` - Extension settings
+
+### Data Model
+```typescript
+// AddressMapping
+{
+  name: string;           // Required
+  tags?: string[];        // Optional, default []
+  color?: string;         // Optional
+  created_at: number;     // Auto-managed
+  updated_at: number;     // Auto-managed
+}
+
+// Settings
+{
+  replace_mode: "inline";
+  domains_enabled: ["solscan.io"];
+}
+```
+
+---
+
+## Phase 2 — Context Menu & Naming Flow (NEXT)
+
+Phase 2 will implement:
+- Context menu registration on Solscan pages
+- Menu enabled/disabled based on selection validity
+- Naming UI modal/popup with address pre-filled
+- Integration with storage module for save operations
 
