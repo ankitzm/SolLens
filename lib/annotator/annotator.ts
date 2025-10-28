@@ -24,16 +24,21 @@ export function annotateAddressLinks(
   links: AddressLink[],
   mappings: Map<string, AddressMapping>
 ): void {
+  let annotatedCount = 0;
+  
   for (const link of links) {
     const mapping = mappings.get(link.address);
     
     if (mapping) {
       annotateLink(link, mapping);
+      annotatedCount++;
     }
     
     // Mark as processed even if no mapping (to avoid re-scanning)
     markAsProcessed(link.element);
   }
+  
+  console.log(`[WNA Annotator] Annotated ${annotatedCount} out of ${links.length} links`);
 }
 
 /**

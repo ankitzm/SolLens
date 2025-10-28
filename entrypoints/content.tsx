@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { NamingModal } from "~/components/NamingModal";
 import { MappingStorage } from "~/lib/storage";
-import { scanForAddressLinks, annotateAddressLinks } from "~/lib/annotator";
+import { scanForAddressLinks, annotateAddressLinks, clearAllProcessedMarkers } from "~/lib/annotator";
 
 export default defineContentScript({
   matches: ["https://solscan.io/*"],
@@ -14,10 +14,18 @@ export default defineContentScript({
     // Listen for messages from background script
     browser.runtime.onMessage.addListener(handleMessage);
     
+    // Wait for page to be fully loaded
+    await waitForPageLoad();
+    
+    console.log("[WNA] Page loaded, starting annotation");
+    
     // Phase 3: Scan and annotate addresses on page load
     await scanAndAnnotate();
     
     console.log("[WNA] Initial annotation complete");
+    
+    // Watch for dynamic content changes (SPA support)
+    startDOMObserver();
   },
 });
 
@@ -133,7 +141,8 @@ async function saveMapping(
     if (response.success) {
       console.log("[WNA] Mapping saved successfully");
       // Re-scan to update visible addresses with new name
-      await scanAndAnnotate();
+      // Clear markers to force re-processing
+      await scanAndAnnotate(true);
     } else {
       throw new Error(response.error || "Failed to save mapping");
     }
@@ -143,11 +152,73 @@ async function saveMapping(
   }
 }
 
+// Debounce timer for DOM changes
+let scanTimeout: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Start observing DOM changes for SPA navigation and dynamic content
+ */
+function startDOMObserver(): void {
+  console.log("[WNA] Starting DOM observer for dynamic content");
+  
+  const observer = new MutationObserver((mutations) => {
+    // Check if any mutations added new nodes
+    const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
+    
+    if (!hasNewNodes) {
+      return;
+    }
+    
+    // Debounce: wait 500ms after last change before scanning
+    if (scanTimeout) {
+      clearTimeout(scanTimeout);
+    }
+    
+    scanTimeout = setTimeout(async () => {
+      console.log("[WNA] DOM changed, re-scanning...");
+      await scanAndAnnotate();
+    }, 500);
+  });
+  
+  // Observe the entire document body for changes
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+  
+  console.log("[WNA] DOM observer active");
+}
+
+/**
+ * Wait for the page to be fully loaded
+ */
+async function waitForPageLoad(): Promise<void> {
+  // Wait until page is fully loaded
+  if (document.readyState !== "complete") {
+    await new Promise((resolve) => window.addEventListener("load", resolve, { once: true }));
+  }
+  
+  // Wait for browser to be idle (max 1 second)
+  await new Promise((resolve) => {
+    if (typeof requestIdleCallback !== "undefined") {
+      requestIdleCallback(resolve, { timeout: 1000 });
+    } else {
+      setTimeout(resolve, 300);
+    }
+  });
+}
+
 /**
  * Scan the page and annotate addresses with saved names
+ * @param clearMarkers - If true, clears all processed markers before scanning (for re-scans)
  */
-async function scanAndAnnotate(): Promise<void> {
+async function scanAndAnnotate(clearMarkers: boolean = false): Promise<void> {
   try {
+    // Clear processed markers if requested (for re-scans after saving)
+    if (clearMarkers) {
+      clearAllProcessedMarkers(document.body);
+    }
+    
     // Get all saved mappings from background
     const response = await browser.runtime.sendMessage({
       type: "GET_ALL_MAPPINGS",
@@ -168,14 +239,12 @@ async function scanAndAnnotate(): Promise<void> {
     
     console.log(`[WNA] Found ${links.length} address links on page`);
     
-    // Annotate links with saved names
-    annotateAddressLinks(links, mappings as any);
-    
-    const annotatedCount = links.filter(link => 
-      mappings.has(link.address)
-    ).length;
-    
-    console.log(`[WNA] Annotated ${annotatedCount} addresses`);
+    if (links.length > 0 && mappings.size > 0) {
+      // Annotate links with saved names
+      annotateAddressLinks(links, mappings as any);
+    } else {
+      console.log(`[WNA] Nothing to annotate - mappings: ${mappings.size}, links: ${links.length}`);
+    }
   } catch (error) {
     console.error("[WNA] Failed to scan and annotate:", error);
   }

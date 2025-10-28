@@ -33,9 +33,15 @@ export function scanForAddressLinks(container: HTMLElement = document.body): Add
   // Find all anchor tags
   const anchors = container.querySelectorAll<HTMLAnchorElement>('a[href]');
   
+  console.log(`[WNA Scanner] Found ${anchors.length} total anchor tags`);
+  
+  let processedCount = 0;
+  let invalidCount = 0;
+  
   for (const anchor of anchors) {
     // Skip if already processed
     if (anchor.hasAttribute(PROCESSED_ATTR)) {
+      processedCount++;
       continue;
     }
     
@@ -48,8 +54,16 @@ export function scanForAddressLinks(container: HTMLElement = document.body): Add
         address,
         originalText: anchor.textContent || "",
       });
+    } else if (anchor.href.includes("solscan.io")) {
+      // Debug: log Solscan links that didn't match
+      invalidCount++;
+      if (invalidCount <= 3) {
+        console.log(`[WNA Scanner] Solscan link not matched:`, anchor.href);
+      }
     }
   }
+  
+  console.log(`[WNA Scanner] Results: ${links.length} valid, ${processedCount} already processed, ${invalidCount} unmatched Solscan links`);
   
   return links;
 }
@@ -85,5 +99,15 @@ export function markAsProcessed(element: HTMLElement): void {
  */
 export function isProcessed(element: HTMLElement): boolean {
   return element.hasAttribute(PROCESSED_ATTR);
+}
+
+/**
+ * Clears all processed markers from the page
+ * Use before re-scanning to pick up new names
+ */
+export function clearAllProcessedMarkers(container: HTMLElement = document.body): void {
+  const processedElements = container.querySelectorAll(`[${PROCESSED_ATTR}]`);
+  console.log(`[WNA Scanner] Clearing ${processedElements.length} processed markers`);
+  processedElements.forEach(el => el.removeAttribute(PROCESSED_ATTR));
 }
 
