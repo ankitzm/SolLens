@@ -3,7 +3,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { NamingModal } from "~/components/NamingModal";
 import { MappingStorage } from "~/lib/storage";
-import { scanForAddressLinks, annotateAddressLinks, clearAllProcessedMarkers } from "~/lib/annotator";
+import { 
+  scanForAddressLinks, 
+  annotateAddressLinks, 
+  clearAllProcessedMarkers,
+  scanTextNodesForAddresses,
+  annotateTextAddresses
+} from "~/lib/annotator";
 
 export default defineContentScript({
   matches: ["https://solscan.io/*"],
@@ -236,14 +242,25 @@ async function scanAndAnnotate(clearMarkers: boolean = false): Promise<void> {
     
     // Scan for address links
     const links = scanForAddressLinks(document.body);
-    
     console.log(`[WNA] Found ${links.length} address links on page`);
     
-    if (links.length > 0 && mappings.size > 0) {
+    // Scan for addresses in plain text
+    const textAddresses = scanTextNodesForAddresses(document.body);
+    console.log(`[WNA] Found ${textAddresses.length} addresses in plain text`);
+    
+    if (mappings.size > 0) {
       // Annotate links with saved names
-      annotateAddressLinks(links, mappings as any);
+      if (links.length > 0) {
+        annotateAddressLinks(links, mappings as any);
+      }
+      
+      // Annotate plain text addresses
+      if (textAddresses.length > 0) {
+        const annotatedTextCount = annotateTextAddresses(textAddresses, mappings as any);
+        console.log(`[WNA] Annotated ${annotatedTextCount} plain text addresses`);
+      }
     } else {
-      console.log(`[WNA] Nothing to annotate - mappings: ${mappings.size}, links: ${links.length}`);
+      console.log(`[WNA] No saved mappings to annotate`);
     }
   } catch (error) {
     console.error("[WNA] Failed to scan and annotate:", error);

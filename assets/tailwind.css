@@ -19,3 +19,15 @@
 .wna-address:active {
   transform: translateY(0) !important;
 }
+
+/* Plain text addresses (not links) */
+.wna-text-address {
+  display: inline-block !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  background: var(--wna-color, #6366f1) !important;
+  background: linear-gradient(135deg, var(--wna-color, #6366f1) 0%, var(--wna-color, #6366f1) 100%) !important;
+  color: white !important;
+  opacity: 0.9 !important;
+  border-bottom: none !important;
+}
