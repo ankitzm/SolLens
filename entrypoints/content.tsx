@@ -216,6 +216,7 @@ async function waitForPageLoad(): Promise<void> {
 
 /**
  * Scan the page and annotate addresses with saved names
+ * Uses chunked processing for better performance
  * @param clearMarkers - If true, clears all processed markers before scanning (for re-scans)
  */
 async function scanAndAnnotate(clearMarkers: boolean = false): Promise<void> {
@@ -240,29 +241,58 @@ async function scanAndAnnotate(clearMarkers: boolean = false): Promise<void> {
     
     console.log(`[WNA] Scanning page with ${mappings.size} saved mappings`);
     
-    // Scan for address links
-    const links = scanForAddressLinks(document.body);
-    console.log(`[WNA] Found ${links.length} address links on page`);
-    
-    // Scan for addresses in plain text
-    const textAddresses = scanTextNodesForAddresses(document.body);
-    console.log(`[WNA] Found ${textAddresses.length} addresses in plain text`);
-    
-    if (mappings.size > 0) {
-      // Annotate links with saved names
-      if (links.length > 0) {
-        annotateAddressLinks(links, mappings as any);
+    // Use requestIdleCallback for non-blocking scanning
+    await new Promise<void>((resolve) => {
+      if (typeof requestIdleCallback !== "undefined") {
+        requestIdleCallback(() => {
+          performScanAndAnnotate(mappings).then(resolve);
+        }, { timeout: 2000 });
+      } else {
+        performScanAndAnnotate(mappings).then(resolve);
       }
-      
-      // Annotate plain text addresses
-      if (textAddresses.length > 0) {
-        const annotatedTextCount = annotateTextAddresses(textAddresses, mappings as any);
-        console.log(`[WNA] Annotated ${annotatedTextCount} plain text addresses`);
-      }
-    } else {
-      console.log(`[WNA] No saved mappings to annotate`);
-    }
+    });
+    
   } catch (error) {
     console.error("[WNA] Failed to scan and annotate:", error);
+  }
+}
+
+/**
+ * Perform the actual scanning and annotation
+ * Separated for chunked processing
+ */
+async function performScanAndAnnotate(mappings: Map<string, any>): Promise<void> {
+  // Scan for address links
+  const links = scanForAddressLinks(document.body);
+  console.log(`[WNA] Found ${links.length} address links on page`);
+  
+  // Scan for addresses in plain text
+  const textAddresses = scanTextNodesForAddresses(document.body);
+  console.log(`[WNA] Found ${textAddresses.length} addresses in plain text`);
+  
+  if (mappings.size > 0) {
+    // Annotate in chunks to avoid blocking the main thread
+    const CHUNK_SIZE = 50; // Process 50 items at a time
+    
+    // Chunk 1: Annotate links
+    if (links.length > 0) {
+      for (let i = 0; i < links.length; i += CHUNK_SIZE) {
+        const chunk = links.slice(i, i + CHUNK_SIZE);
+        annotateAddressLinks(chunk, mappings as any);
+        
+        // Yield to browser between chunks
+        if (i + CHUNK_SIZE < links.length) {
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+      }
+    }
+    
+    // Chunk 2: Annotate plain text addresses
+    if (textAddresses.length > 0) {
+      const annotatedTextCount = annotateTextAddresses(textAddresses, mappings as any);
+      console.log(`[WNA] Annotated ${annotatedTextCount} plain text addresses`);
+    }
+  } else {
+    console.log(`[WNA] No saved mappings to annotate`);
   }
 }

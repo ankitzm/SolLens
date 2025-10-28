@@ -21,6 +21,46 @@ export interface AddressLink {
 }
 
 /**
+ * Blocklist: Element selectors to skip during scanning
+ * These are areas where addresses are likely code/data, not user content
+ */
+const BLOCKLIST_SELECTORS = [
+  'pre',           // Code blocks
+  'code',          // Inline code
+  'script',        // Scripts
+  'style',         // Styles
+  'noscript',      // No-script tags
+  '[class*="json"]', // JSON display elements
+  '[class*="code"]', // Code display elements
+  '[data-wna-text-processed]', // Already processed
+];
+
+/**
+ * Check if an element should be skipped during scanning
+ */
+export function shouldSkipElement(element: HTMLElement): boolean {
+  // Check if element matches any blocklist selector
+  for (const selector of BLOCKLIST_SELECTORS) {
+    if (element.matches(selector)) {
+      return true;
+    }
+  }
+  
+  // Check if any parent matches blocklist
+  let parent = element.parentElement;
+  while (parent) {
+    for (const selector of BLOCKLIST_SELECTORS) {
+      if (parent.matches(selector)) {
+        return true;
+      }
+    }
+    parent = parent.parentElement;
+  }
+  
+  return false;
+}
+
+/**
  * Scans for anchor elements containing Solana addresses
  * Looks for patterns like /account/<address>, /address/<address>, /token/<address>
  * 
@@ -37,8 +77,15 @@ export function scanForAddressLinks(container: HTMLElement = document.body): Add
   
   let processedCount = 0;
   let invalidCount = 0;
+  let skippedCount = 0;
   
   for (const anchor of anchors) {
+    // Skip if in blocklist context
+    if (shouldSkipElement(anchor)) {
+      skippedCount++;
+      continue;
+    }
+    
     // Skip if already processed
     if (anchor.hasAttribute(PROCESSED_ATTR)) {
       processedCount++;
@@ -63,7 +110,7 @@ export function scanForAddressLinks(container: HTMLElement = document.body): Add
     }
   }
   
-  console.log(`[WNA Scanner] Results: ${links.length} valid, ${processedCount} already processed, ${invalidCount} unmatched Solscan links`);
+  console.log(`[WNA Scanner] Results: ${links.length} valid, ${processedCount} processed, ${skippedCount} skipped, ${invalidCount} unmatched`);
   
   return links;
 }
