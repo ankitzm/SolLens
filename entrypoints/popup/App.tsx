@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MappingStorage } from '~/lib/storage';
+import { MappingStorage, importData as importStorageData, exportData as exportStorageData } from '~/lib/storage';
 import { AddressMapping } from '~/lib/storage/schema';
 
 function App() {
@@ -61,7 +61,7 @@ function App() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      await MappingStorage.importData(data);
+      await importStorageData(data);
       await loadMappings();
       alert('Import successful!');
     } catch (error) {
@@ -72,7 +72,7 @@ function App() {
 
   const handleExport = async () => {
     try {
-      const data = await MappingStorage.exportData();
+      const data = await exportStorageData();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -108,116 +108,127 @@ function App() {
   }
 
   return (
-    <div className="p-4 w-[400px] h-96 flex flex-col">
-      <h1 className="text-xl font-bold mb-4">WNA - Wallet Namer</h1>
-      
-      {/* Search and Filters */}
-      <div className="mb-4 space-y-2">
-        <input
-          type="text"
-          placeholder="Search mappings..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-        />
-        
-        <div className="flex gap-2">
-          <select
-            value={selectedTag}
-            onChange={(e) => setSelectedTag(e.target.value)}
-            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+    <div className="p-4 w-96 h-[540px] flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">WNA - Wallet Namer</h1>
+        {editingMapping && (
+          <button
+            onClick={() => setEditingMapping(null)}
+            className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1 rounded"
           >
-            <option value="">All Tags</option>
-            {allTags.map(tag => (
-              <option key={tag} value={tag}>{tag}</option>
-            ))}
-          </select>
-          
-          <select
-            value={selectedColor}
-            onChange={(e) => setSelectedColor(e.target.value)}
-            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-          >
-            <option value="">All Colors</option>
-            {allColors.map(color => (
-              <option key={color} value={color}>{color}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Mappings List */}
-      <div className="flex-1 overflow-y-auto mb-4">
-        {filteredMappings.length === 0 ? (
-          <div className="text-gray-500 text-sm text-center py-4">
-            {mappings.size === 0 ? 'No mappings yet' : 'No matches found'}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filteredMappings.map(([address, mapping]) => (
-              <div key={address} className="border border-gray-200 rounded p-3 text-sm">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate" style={{ color: mapping.color }}>
-                      {mapping.name}
-                    </div>
-                    <div className="text-gray-500 text-xs font-mono truncate">
-                      {address.slice(0, 8)}...{address.slice(-8)}
-                    </div>
-                  </div>
-                  <div className="flex gap-1 ml-2">
-                    <button
-                      onClick={() => handleEdit(address, mapping)}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(address)}
-                      className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-                
-                {mapping.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {mapping.tags.map(tag => (
-                      <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+            Back
+          </button>
         )}
       </div>
 
-      {/* Import/Export */}
-      <div className="flex gap-2 border-t pt-3">
-        <label className="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded text-sm text-center cursor-pointer hover:bg-green-200">
-          Import
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
-        </label>
-        <button
-          onClick={handleExport}
-          className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
-        >
-          Export
-        </button>
-      </div>
+      {!editingMapping ? (
+        <>
+          {/* Search and Filters */}
+          <div className="mb-4 space-y-2">
+            <input
+              type="text"
+              placeholder="Search mappings..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+            />
+            
+            <div className="flex gap-2">
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+              >
+                <option value="">All Tags</option>
+                {allTags.map(tag => (
+                  <option key={tag} value={tag}>{tag}</option>
+                ))}
+              </select>
+              
+              <select
+                value={selectedColor}
+                onChange={(e) => setSelectedColor(e.target.value)}
+                className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+              >
+                <option value="">All Colors</option>
+                {allColors.map(color => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-      {/* Edit Modal */}
-      {editingMapping && (
-        <EditModal
+          {/* Mappings List */}
+          <div className="flex-1 overflow-y-auto mb-4">
+            {filteredMappings.length === 0 ? (
+              <div className="text-gray-500 text-sm text-center py-4">
+                {mappings.size === 0 ? 'No mappings yet' : 'No matches found'}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredMappings.map(([address, mapping]) => (
+                  <div key={address} className="border border-gray-200 rounded p-3 text-sm">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate" style={{ color: mapping.color }}>
+                          {mapping.name}
+                        </div>
+                        <div className="text-gray-500 text-xs font-mono truncate">
+                          {address.slice(0, 8)}...{address.slice(-8)}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 ml-2">
+                        <button
+                          onClick={() => handleEdit(address, mapping)}
+                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(address)}
+                          className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {mapping.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {mapping.tags.map(tag => (
+                          <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Import/Export */}
+          <div className="flex gap-2 border-t pt-3">
+            <label className="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded text-sm text-center cursor-pointer hover:bg-green-200">
+              Import
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={handleExport}
+              className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+            >
+              Export
+            </button>
+          </div>
+        </>
+      ) : (
+        <EditPanel
           address={editingMapping.address}
           mapping={editingMapping.mapping}
           onSave={handleSaveEdit}
@@ -228,8 +239,8 @@ function App() {
   );
 }
 
-// Edit Modal Component
-function EditModal({ 
+// Inline Edit Panel (replaces list while editing)
+function EditPanel({ 
   address, 
   mapping, 
   onSave, 
@@ -242,7 +253,7 @@ function EditModal({
 }) {
   const [name, setName] = useState(mapping.name);
   const [tags, setTags] = useState(mapping.tags.join(', '));
-  const [color, setColor] = useState(mapping.color);
+  const [color, setColor] = useState(mapping.color || '#3b82f6');
 
   const handleSave = () => {
     const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
@@ -250,9 +261,9 @@ function EditModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-80 max-h-96 overflow-y-auto">
-        <h3 className="text-lg font-bold mb-4">Edit Mapping</h3>
+    <div className="flex-1 overflow-y-auto">
+      <div className="bg-white border border-gray-200 rounded-xl p-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Edit Mapping</h3>
         
         <div className="space-y-3">
           <div>
@@ -261,7 +272,7 @@ function EditModal({
               type="text"
               value={address}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-200 rounded text-sm bg-gray-100 text-gray-600"
             />
           </div>
           
@@ -271,7 +282,7 @@ function EditModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
               placeholder="Enter name"
             />
           </div>
@@ -282,7 +293,7 @@ function EditModal({
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
               placeholder="protocol, fee, etc"
             />
           </div>
@@ -293,21 +304,21 @@ function EditModal({
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-full h-10 border border-gray-300 rounded"
+              className="w-full h-10 border border-gray-200 rounded"
             />
           </div>
         </div>
         
-        <div className="flex gap-2 mt-6">
+        <div className="flex gap-2 mt-4">
           <button
             onClick={handleSave}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
             Save
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+            className="flex-1 px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
           >
             Cancel
           </button>
