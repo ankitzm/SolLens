@@ -206,9 +206,9 @@ function App() {
                       <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: mapping.color || '#14b8a6' }}></div>
                       <div className="flex flex-col flex-grow">
                         <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-baseline gap-3 min-w-0">
+                          <div className="flex items-baseline gap-2 min-w-0">
                             <p className="text-base font-medium text-white truncate">{mapping.name}</p>
-                            <p className="text-base font-normal text-gray-400 truncate hidden sm:block">{address.slice(0, 4)}...{address.slice(-4)}</p>
+                            <p className="text-xs font-normal text-gray-400 truncate">({address.slice(0, 4)}...{address.slice(-4)})</p>
                           </div>
                           <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => handleEdit(address, mapping)} className="flex items-center justify-center h-8 w-8 rounded-lg text-gray-400 hover:bg-neutral-700 hover:text-white transition-colors" aria-label="Edit">
@@ -220,9 +220,9 @@ function App() {
                           </div>
                         </div>
                         {mapping.tags.length > 0 && (
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-1 mt-1">
                             {mapping.tags.map(tag => (
-                              <span key={tag} className="rounded-full bg-neutral-700 px-3 py-1 text-xs font-medium text-gray-300">{tag}</span>
+                              <span key={tag} className="rounded-md bg-neutral-700 px-3 py-1 text-xs font-medium text-gray-300">{tag}</span>
                             ))}
                           </div>
                         )}
