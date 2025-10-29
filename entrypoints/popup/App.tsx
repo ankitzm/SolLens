@@ -7,7 +7,7 @@ import EditPanel from './EditPanel';
 function App() {
   const [mappings, setMappings] = useState<Map<string, AddressMapping>>(new Map());
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [editingMapping, setEditingMapping] = useState<{ address: string; mapping: AddressMapping } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +106,7 @@ function App() {
   const filteredMappings = Array.from(mappings.entries()).filter(([address, mapping]) => {
     const matchesSearch = mapping.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          address.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTag = !selectedTag || mapping.tags.includes(selectedTag);
+    const matchesTag = selectedTags.length === 0 || selectedTags.some(t => mapping.tags.includes(t));
     const matchesColor = !selectedColor || mapping.color === selectedColor;
     return matchesSearch && matchesTag && matchesColor;
   });
@@ -160,35 +160,41 @@ function App() {
                   onClick={() => setIsTagMenuOpen(v => !v)}
                   className="flex h-8 items-center justify-center gap-1.5 rounded-lg bg-indigo-500/20 px-3 text-xs font-medium text-indigo-300 hover:bg-indigo-500/30 transition-colors"
                 >
-                  <span>{selectedTag ? `Tag: ${selectedTag}` : 'All Tags'}</span>
+                  <span>{selectedTags.length > 0 ? `Tags (${selectedTags.length})` : 'All Tags'}</span>
                   <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.243l3.71-4.012a.75.75 0 111.08 1.04l-4.24 4.585a.75.75 0 01-1.08 0L5.25 8.27a.75.75 0 01-.02-1.06z"/></svg>
                 </button>
                 {isTagMenuOpen && (
                   <div className="absolute z-10 mt-1 w-40 rounded-md bg-neutral-800 border border-neutral-700 shadow-lg py-1">
                     <button
-                      onClick={() => { setSelectedTag(''); setIsTagMenuOpen(false); }}
+                      onClick={() => { setSelectedTags([]); setIsTagMenuOpen(false); }}
                       className="block w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-neutral-700"
                     >
                       All Tags
                     </button>
-                    {allTags.map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => { setSelectedTag(tag); setIsTagMenuOpen(false); }}
-                        className="block w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-neutral-700"
-                      >
-                        {tag}
-                      </button>
-                    ))}
+                    {allTags.map(tag => {
+                      const active = selectedTags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+                          }}
+                          className={`flex items-center gap-2 w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-700 ${active ? 'text-white' : 'text-gray-300'}`}
+                        >
+                          <span className={`inline-block h-3 w-3 rounded-sm border ${active ? 'bg-indigo-500 border-indigo-500' : 'border-neutral-500'}`}></span>
+                          {tag}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
-              {selectedTag && (
-                <button onClick={() => setSelectedTag('')} className="group flex h-8 items-center justify-center gap-1.5 rounded-lg bg-neutral-800 pl-3 pr-2 text-xs font-medium text-gray-300 hover:bg-neutral-700 transition-colors">
-                  <span>{selectedTag}</span>
+              {selectedTags.map(tag => (
+                <button key={tag} onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))} className="group flex h-8 items-center justify-center gap-1.5 rounded-lg bg-neutral-800 pl-3 pr-2 text-xs font-medium text-gray-300 hover:bg-neutral-700 transition-colors">
+                  <span>{tag}</span>
                   <svg className="h-4 w-4 text-gray-500 group-hover:text-gray-300" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.646 4.646a.5.5 0 01.708 0L10 9.293l4.646-4.647a.5.5 0 11.708.708L10.707 10l4.647 4.646a.5.5 0 01-.708.708L10 10.707l-4.646 4.647a.5.5 0 01-.708-.708L9.293 10 4.646 5.354a.5.5 0 010-.708z" clipRule="evenodd"/></svg>
                 </button>
-              )}
+              ))}
             </div>
           </div>
 
