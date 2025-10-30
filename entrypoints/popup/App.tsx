@@ -143,7 +143,8 @@ function App() {
   return (
     <div className="p-4 w-96 h-[540px] flex flex-col bg-neutral-900 text-gray-200">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Wallet Mappings</h1>
+        <img src="/icon/48.png" alt="SolLens" className="w-6 h-6" />
+        <h1 className="text-2xl font-bold tracking-tight text-white">SolLens</h1>
         {(editingMapping || isAdding) && (
           <button
             onClick={() => { setEditingMapping(null); setIsAdding(false); }}

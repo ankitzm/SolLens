@@ -7,8 +7,8 @@ export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   outDir: "output",
   manifest: {
-    name: "WNA - Wallet Namer",
-    description: "Locally name Solana wallet addresses on Solscan",
+    name: "ScanLens",
+    description: "Locally name Solana wallet addresses on Solscan. A clearer lens on Solscan data.",
     version: "0.0.1",
     permissions: ["contextMenus", "storage", "activeTab"],
     host_permissions: ["https://solscan.io/*"],
