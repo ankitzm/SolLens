@@ -3,6 +3,7 @@ import { MappingStorage, importData as importStorageData, exportData as exportSt
 import { AddressMapping } from '~/lib/storage/schema';
 import { isValidSolanaAddress } from '~/lib/utils/address';
 import EditPanel from './EditPanel';
+import AddPanel from './AddPanel';
 
 function App() {
   const [mappings, setMappings] = useState<Map<string, AddressMapping>>(new Map());
@@ -10,6 +11,7 @@ function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [editingMapping, setEditingMapping] = useState<{ address: string; mapping: AddressMapping } | null>(null);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTagMenuOpen, setIsTagMenuOpen] = useState(false);
   const tagMenuRef = useRef<HTMLDivElement | null>(null);
@@ -70,6 +72,21 @@ function App() {
     }
   };
 
+  const handleSaveAdd = async (address: string, name: string, tags: string[], color: string) => {
+    try {
+      if (!isValidSolanaAddress(address)) {
+        alert('Invalid Solana address');
+        return;
+      }
+      await MappingStorage.save(address, { name, tags, color });
+      setIsAdding(false);
+      await loadMappings();
+    } catch (error) {
+      console.error('Failed to add mapping:', error);
+      alert('Failed to add mapping');
+    }
+  };
+
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -127,9 +144,9 @@ function App() {
     <div className="p-4 w-96 h-[540px] flex flex-col bg-neutral-900 text-gray-200 rounded-xl">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold tracking-tight text-white">Wallet Mappings</h1>
-        {editingMapping && (
+        {(editingMapping || isAdding) && (
           <button
-            onClick={() => setEditingMapping(null)}
+            onClick={() => { setEditingMapping(null); setIsAdding(false); }}
             className="text-sm text-gray-400 hover:text-gray-200 px-2 py-1 rounded"
           >
             Back
@@ -137,7 +154,7 @@ function App() {
         )}
       </div>
 
-      {!editingMapping ? (
+      {!editingMapping && !isAdding ? (
         <>
           {/* Search and Filters */}
           <div className="mb-4 space-y-3">
@@ -251,26 +268,23 @@ function App() {
               <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17 6a1 1 0 10-2 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2V6a1 1 0 10-2 0v1a4 4 0 004 4h6a4 4 0 004-4V6z"/><path d="M13 11a1 1 0 00-1.707.707L10 12.414V19a1 1 0 102 0v-6.586l1.293 1.293A1 1 0 0014.707 12.293l-3-3z"/></svg>
               <span className="truncate">Export</span>
             </button>
-            <button onClick={async () => {
-              const address = prompt('Address');
-              if (!address) return;
-              if (!isValidSolanaAddress(address)) { alert('Invalid Solana address'); return; }
-              const name = prompt('Name');
-              if (!name) return;
-              await MappingStorage.save(address, { name, tags: [], color: '#6366f1' });
-              await loadMappings();
-            }} className="flex-1 flex h-9 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors">
+            <button onClick={() => setIsAdding(true)} className="flex-1 flex h-9 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors">
               <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg>
               <span className="truncate">Add New</span>
             </button>
           </div>
         </>
-      ) : (
+      ) : editingMapping ? (
         <EditPanel
           address={editingMapping.address}
           mapping={editingMapping.mapping}
           onSave={handleSaveEdit}
           onCancel={() => setEditingMapping(null)}
+        />
+      ) : (
+        <AddPanel
+          onSave={handleSaveAdd}
+          onCancel={() => setIsAdding(false)}
         />
       )}
     </div>
