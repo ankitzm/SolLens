@@ -141,7 +141,7 @@ function App() {
   }
 
   return (
-    <div className="p-4 w-96 h-[540px] flex flex-col bg-neutral-900 text-gray-200 rounded-xl">
+    <div className="p-4 w-96 h-[540px] flex flex-col bg-neutral-900 text-gray-200">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold tracking-tight text-white">Wallet Mappings</h1>
         {(editingMapping || isAdding) && (
