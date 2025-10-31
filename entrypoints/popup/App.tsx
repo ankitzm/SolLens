@@ -235,6 +235,16 @@ function App() {
                             <p className="text-xs font-normal text-gray-400 truncate">({address.slice(0, 4)}...{address.slice(-4)})</p>
                           </div>
                           <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => window.open(`https://solscan.io/account/${address}`, '_blank')} 
+                              className="flex items-center justify-center h-8 w-8 rounded-lg text-gray-400 hover:bg-neutral-700 hover:text-white transition-colors" 
+                              aria-label="Open on Solscan"
+                            >
+                              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+                              </svg>
+                            </button>
                             <button onClick={() => handleEdit(address, mapping)} className="flex items-center justify-center h-8 w-8 rounded-lg text-gray-400 hover:bg-neutral-700 hover:text-white transition-colors" aria-label="Edit">
                               <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5a2 2 0 01-.878.515l-3 1a.5.5 0 01-.633-.633l1-3a2 2 0 01.515-.879l8.5-8.5z"/></svg>
                             </button>
