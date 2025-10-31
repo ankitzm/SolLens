@@ -54,9 +54,23 @@ function AddPanel({
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="rounded-xl border border-neutral-700 bg-neutral-800 p-5 text-gray-200 shadow-xl">
-        <div className="mb-5">
-          <p className="text-2xl font-bold leading-tight text-white">Add Wallet</p>
-          <p className="mt-1 text-sm text-gray-400">Create a new mapping for a wallet address.</p>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-2xl font-bold leading-tight text-white">Add Wallet</p>
+            <p className="mt-1 text-sm text-gray-400">Create a new mapping for a wallet address.</p>
+          </div>
+          <button 
+            type="button" 
+            disabled={!canSave} 
+            onClick={handleSave} 
+            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h3a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h3v5.586l-1.293-1.293z"/>
+              <path d="M9 2a1 1 0 011-1h2a1 1 0 011 1v4H9V2z"/>
+            </svg>
+            Save
+          </button>
         </div>
 
         <div className="space-y-5">
@@ -134,16 +148,6 @@ function AddPanel({
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={onCancel} className="h-10 rounded-lg px-4 text-sm font-medium text-gray-200 hover:bg-white/5">
-              Cancel
-            </button>
-            <button type="button" disabled={!canSave} onClick={handleSave} className="h-10 rounded-lg bg-indigo-600 px-5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
-              Save Wallet
-            </button>
           </div>
         </div>
       </div>
