@@ -161,7 +161,7 @@ function App() {
           <div className="mb-4 space-y-3">
             <div className="relative w-full">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 104.473 2.326l3.35-3.35a.75.75 0 111.06 1.06l-3.35 3.35A5.5 5.5 0 009 3.5zM4 9a5 5 0 1110 0A5 5 0 014 9z" clipRule="evenodd" /></svg>
+                <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" /></svg>
               </div>
               <input
                 type="text"
@@ -272,12 +272,12 @@ function App() {
           {/* Import/Export */}
           <div className="flex gap-2 border-t border-neutral-800 pt-3">
             <label className="flex-1 flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg bg-neutral-800 px-3 text-sm font-medium text-gray-300 hover:bg-neutral-700 transition-colors">
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M3 14a2 2 0 002 2h10a2 2 0 002-2v-1a1 1 0 112 0v1a4 4 0 01-4 4H5a4 4 0 01-4-4v-1a1 1 0 112 0v1z" /><path d="M7 9a1 1 0 011.707-.707L10 9.586V3a1 1 0 112 0v6.586l1.293-1.293A1 1 0 1114.707 9.707l-3 3a1 1 0 01-1.414 0l-3-3A1 1 0 017 9z" /></svg>
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" /></svg>
               <span className="truncate">Import</span>
               <input type="file" accept=".json" onChange={handleImport} className="hidden" />
             </label>
             <button onClick={handleExport} className="flex-1 flex h-9 items-center justify-center gap-2 rounded-lg bg-neutral-800 px-3 text-sm font-medium text-gray-300 hover:bg-neutral-700 transition-colors">
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17 6a1 1 0 10-2 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2V6a1 1 0 10-2 0v1a4 4 0 004 4h6a4 4 0 004-4V6z" /><path d="M13 11a1 1 0 00-1.707.707L10 12.414V19a1 1 0 102 0v-6.586l1.293 1.293A1 1 0 0014.707 12.293l-3-3z" /></svg>
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" /></svg>
               <span className="truncate">Export</span>
             </button>
             <button onClick={() => setIsAdding(true)} className="flex-1 flex h-9 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors">
