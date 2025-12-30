@@ -38,6 +38,12 @@ Right-click any Solana address on Solscan and give it a memorable name. No more 
 
 ---
 
+## 📎 Demo
+
+https://github.com/user-attachments/assets/7adb53ba-e969-4002-abd3-7ac38909bc5f
+
+---
+
 ## 🚀 Quick Start
 
 ### Installation
